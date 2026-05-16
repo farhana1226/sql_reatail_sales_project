@@ -2,7 +2,7 @@ create database sql_project_p1;
 use sql_project_p1;
 
 create table retail_sales(
-     transaction_id int,
+     transaction_id int primary key,
      sale_date date ,
      sale_time Time ,
      customer_id int,
@@ -64,10 +64,7 @@ VALUES
 
 select * from retail_sales;
 
-SELECT * FROM retail_sales;
-
 select count(*) from retail_sales;
-
 
 select* from retail_sales 
 where 
@@ -77,7 +74,7 @@ where
  customer_id is null or
  gender is null ;
  
- -- How many sales we have?
+ -- How many sales do we have?
  select count(*) as total_sale from retail_sales;
  
  -- how many Customers we have ?
@@ -86,28 +83,30 @@ select count( distinct customer_id) as total_sale from retail_sales;
  
 select distinct category from retail_sales;
  
- -- Data Analysis & Business key Problem & answers
- 
  -- Query to retrieve all columns for sales made on '2022-11-05'
  select * from retail_sales where sale_date ='2025-01-07';
  
- -- Query to retrive all transactions where the category is ''clothing
-select *  from retail_sales where category='clothing' and quantity = month(01);  
+ -- Query to retrieve all transactions where the category is ''clothing
+select *
+from retail_sales
+where category='clothing'
+and quantity >= 1;
 
-select category,sum(quantity) from retail_sales
-where category ='clothing ' and to_char(sale_date,'yyy-mm')='2025-01' 
-group by 1;
+select category, sum(quantity)
+from retail_sales
+where category='clothing'
+and DATE_FORMAT(sale_date,'%Y-%m')='2025-01'
+group by category;
 
-select category,sum(quantity) from retail_sales
-where category ='clothing ' and to_char(sale_date,'yyy-mm')='2025-01' ;
-
-select distinct category ,sum(total_sale) from retail_sales group by category;
+select distinct category ,sum(total_sale) as total_revenue
+from retail_sales group by category;
 
 -- average age of customers who purchased items from the 'beauty' category
 
-select avg(age),category
+select category, avg(age)
 from retail_sales
-where category='beauty';
+where category='beauty'
+group by category;
 
 
 select * from retail_sales
@@ -123,8 +122,7 @@ select category , gender ,count(*) as total_transactions
 from retail_sales
 group by category,gender order by 1;
 
--- calculate average sale for each month find of selling nonth in eachh year
-
+-- calculate average sale for each month find of selling month in each year
 
 SELECT year, month, avg_sale
 FROM (
@@ -140,11 +138,11 @@ WHERE rnk = 1;
 
 -- find the top 5 customers based on highest total sales
 
-select 
-      customer_id,sum(total_sale) as total_sales
+select customer_id, sum(total_sale) as total_sales
 from retail_sales
-group by 1
-order by 2 desc;
+group by customer_id
+order by total_sales desc
+limit 5;
 
 select category, count(distinct customer_id) as count_unique_customer 
 from retail_sales
@@ -152,16 +150,16 @@ group by category;
 
 select * from retail_sales;
 
--- ceating each shift and number of orders (Example morning <=12,afternoon between 12 & 17, Evening>17)
+-- creating each shift and number of orders (Example morning <=12,afternoon between 12 & 17, Evening>17)
 with hourly_sale as (
-select *, 
-     case 
-         when extract(hour from sale_time) < 12 then "Morning"
-         when extract(hour from sale_time) between 12 and 17 then "Afternoon"
-         else "Evening"
-	  end as shift
-from retail_sales)
+select *,
+    case
+        when extract(hour from sale_time) < 12 then 'Morning'
+        when extract(hour from sale_time) between 12 and 17 then 'Afternoon'
+        else 'Evening'
+    end as shift
+from retail_sales
+)
 select shift, count(*) as total_orders
 from hourly_sale
 group by shift;
-select * from retail_sales;
